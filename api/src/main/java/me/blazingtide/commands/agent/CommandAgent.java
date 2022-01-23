@@ -128,7 +128,7 @@ public interface CommandAgent {
         final StringBuilder newLabelStr = new StringBuilder();
         final char[] chars = labelStr.toCharArray();
 
-        if (command.hasPermission() && !hasPermission(() -> senderObject, command.getPermission())) {
+        if (!command.hasPermission() && !hasPermission(() -> senderObject, command.getPermission())) {
             handleException(new CommandPermissionException(commandString, command.getPermission()), senderObject, command, labelStr);
             return;
         }
