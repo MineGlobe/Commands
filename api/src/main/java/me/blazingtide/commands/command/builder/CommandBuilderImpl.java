@@ -4,7 +4,7 @@ import me.blazingtide.commands.Commands;
 import me.blazingtide.commands.agent.CommandInjectionAgent;
 import me.blazingtide.commands.argument.CommandArguments;
 import me.blazingtide.commands.command.Command;
-import me.blazingtide.commands.command.sub.SubCommand;
+import me.blazingtide.commands.command.CommandImpl;
 import me.blazingtide.commands.label.Label;
 import me.blazingtide.commands.service.CommandService;
 
@@ -21,7 +21,7 @@ public class CommandBuilderImpl implements CommandBuilder {
     private String description = "";
     private String permission = "";
     private boolean async;
-    private List<SubCommand> subCommands = new ArrayList<>();
+    private List<Command> subCommands = new ArrayList<>();
 
     @Override
     public CommandBuilder label(String label) {
@@ -52,7 +52,7 @@ public class CommandBuilderImpl implements CommandBuilder {
     }
 
     @Override
-    public CommandBuilder subCommand(SubCommand subCommand) {
+    public CommandBuilder subCommand(Command subCommand) {
         Objects.requireNonNull(subCommand);
         this.subCommands.add(subCommand);
         return this;
@@ -76,46 +76,16 @@ public class CommandBuilderImpl implements CommandBuilder {
         if (labels.isEmpty()) {
             throw new NullPointerException("There were no labels specified.");
         }
-//        if (subCommands.isEmpty()) {
-//            Objects.requireNonNull(executor, "Command execution has not been defined.");
-//        }
 
-        final Command command = new Command() { //Creates a new command instance
-            @Override
-            public List<Label> getLabels() {
-                return labels;
-            }
-
-            @Override
-            public String getDescription() {
-                return description;
-            }
-
-            @Override
-            public String getUsage() {
-                return usage;
-            }
-
-            @Override
-            public Consumer<CommandArguments> getExecutor() {
-                return executor;
-            }
-
-            @Override
-            public boolean isAsync() {
-                return async;
-            }
-
-            @Override
-            public List<SubCommand> getSubCommands() {
-                return subCommands;
-            }
-
-            @Override
-            public String getPermission() {
-                return permission;
-            }
-        };
+        final Command command = new CommandImpl(
+                executor,
+                labels,
+                usage,
+                description,
+                permission,
+                async,
+                subCommands
+        );
 
         final CommandService service = Commands.getCommandService();
 

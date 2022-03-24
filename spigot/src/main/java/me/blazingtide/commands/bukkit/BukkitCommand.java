@@ -3,7 +3,6 @@ package me.blazingtide.commands.bukkit;
 import com.google.common.collect.Lists;
 import me.blazingtide.commands.Commands;
 import me.blazingtide.commands.command.Command;
-import me.blazingtide.commands.command.sub.SubCommand;
 import me.blazingtide.commands.label.Label;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -12,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class BukkitCommand extends org.bukkit.command.Command {
@@ -25,15 +25,16 @@ public class BukkitCommand extends org.bukkit.command.Command {
 
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
-        if (args.length == 1 & !command.getSubCommands().isEmpty()) {
-            final String lastWord = args[args.length - 1];
+        if (!command.getSubCommands().isEmpty() && args.length <= 1) {
+            Optional<String> lastWords = args.length == 0 ? Optional.empty() : Optional.of(args[0]);
+
             final List<String> subCommands = Lists.newArrayList();
 
-            for (SubCommand subCommand : command.getSubCommands()) {
+            for (Command subCommand : command.getSubCommands()) {
                 subCommands.addAll(subCommand.getLabels()
                         .stream()
                         .map(Label::getValue)
-                        .filter(str -> StringUtil.startsWithIgnoreCase(str, lastWord))
+                        .filter(str -> !lastWords.isPresent() || StringUtil.startsWithIgnoreCase(str, lastWords.get()))
                         .collect(Collectors.toList()));
             }
 
