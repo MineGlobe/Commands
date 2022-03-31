@@ -6,11 +6,9 @@ import me.blazingtide.commands.argument.CommandArguments;
 import me.blazingtide.commands.command.Command;
 import me.blazingtide.commands.exception.CommandException;
 import me.blazingtide.commands.exception.CommandPermissionException;
-import me.blazingtide.commands.label.Label;
 import me.blazingtide.commands.sender.Sender;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -70,8 +68,6 @@ public interface CommandAgent {
      * @param sender        the sender of the command
      */
     default void onCommand(String commandString, Object sender) {
-        final Collection<Command> repository = Commands.getCommandService().getRepository().getCollection();
-
         //Split all the arguments & collect them into an array
         String[] arguments = commandString.split(" ");
 
@@ -86,16 +82,9 @@ public interface CommandAgent {
             arguments = Arrays.copyOfRange(arguments, 1, arguments.length);
         }
 
-        for (Command command : repository) {
-            final String[] finalArguments = arguments;
+        final Command command = Commands.getCommandService().getRepository().getCollection().get(label);
 
-            command.getLabels()
-                    .stream()
-                    .filter(l -> l.getValue().equalsIgnoreCase(label))
-                    .forEach(ignored -> {
-                        filterSubCommands(commandString, command, label, sender, finalArguments);
-                    });
-        }
+        filterSubCommands(commandString, command, label, sender, arguments);
     }
 
     default void filterSubCommands(String commandString, Command command, String labelStr, Object sender, String[] arguments) {
@@ -107,7 +96,7 @@ public interface CommandAgent {
             //A list of all the sub commands registered to the subCommandLabel
             final List<Command> collect = command.getSubCommands()
                     .stream()
-                    .filter(sub -> sub.getLabels().stream().anyMatch(l1 -> l1.getValue().equalsIgnoreCase(subCommandLabel)))
+                    .filter(sub -> sub.getLabels().stream().anyMatch(l1 -> l1.equalsIgnoreCase(subCommandLabel)))
                     .collect(Collectors.toList());
 
             if (!collect.isEmpty()) {
@@ -161,7 +150,7 @@ public interface CommandAgent {
 
         for (int i = 0; i < stringArguments.length; i++) {
             final String str = stringArguments[i];
-            final Argument argument = () -> Label.of(str);
+            final Argument argument = () -> str;
 
             arguments[i] = argument;
         }

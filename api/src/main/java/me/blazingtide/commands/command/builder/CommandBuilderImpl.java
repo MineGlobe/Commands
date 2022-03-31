@@ -5,7 +5,6 @@ import me.blazingtide.commands.agent.CommandInjectionAgent;
 import me.blazingtide.commands.argument.CommandArguments;
 import me.blazingtide.commands.command.Command;
 import me.blazingtide.commands.command.CommandImpl;
-import me.blazingtide.commands.label.Label;
 import me.blazingtide.commands.service.CommandService;
 
 import java.util.ArrayList;
@@ -16,17 +15,18 @@ import java.util.function.Consumer;
 public class CommandBuilderImpl implements CommandBuilder {
 
     private Consumer<CommandArguments> executor;
-    private List<Label> labels = new ArrayList<>();
+    private List<String> labels = new ArrayList<>();
     private String usage = "";
     private String description = "";
     private String permission = "";
+    private boolean subcommand = false;
     private boolean async;
     private List<Command> subCommands = new ArrayList<>();
 
     @Override
     public CommandBuilder label(String label) {
         Objects.requireNonNull(label);
-        this.labels.add(Label.of(label));
+        this.labels.add(label);
         return this;
     }
 
@@ -72,6 +72,12 @@ public class CommandBuilderImpl implements CommandBuilder {
     }
 
     @Override
+    public CommandBuilder subcommand() {
+        subcommand = !subcommand;
+        return this;
+    }
+
+    @Override
     public Command create() {
         if (labels.isEmpty()) {
             throw new NullPointerException("There were no labels specified.");
@@ -87,13 +93,15 @@ public class CommandBuilderImpl implements CommandBuilder {
                 subCommands
         );
 
-        final CommandService service = Commands.getCommandService();
+        if (!subcommand) {
+            final CommandService service = Commands.getCommandService();
 
-        service.getRepository().getCollection().add(command); //Stores the command
+            service.getRepository().add(command); //Stores the command
 
-        //Injects the command
-        if (service.getAgent() instanceof CommandInjectionAgent) {
-            ((CommandInjectionAgent) service.getAgent()).inject(command);
+            //Injects the command
+            if (service.getAgent() instanceof CommandInjectionAgent) {
+                ((CommandInjectionAgent) service.getAgent()).inject(command);
+            }
         }
 
         return command;

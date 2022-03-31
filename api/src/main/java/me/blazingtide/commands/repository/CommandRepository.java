@@ -3,7 +3,7 @@ package me.blazingtide.commands.repository;
 import me.blazingtide.commands.command.Command;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Map;
 
 /**
  * A command repository is a object that caches and retrieves command objects
@@ -11,7 +11,7 @@ import java.util.List;
  * @param <E> object type
  * @param <T> collection type
  */
-public interface CommandRepository<E, T extends Collection<E>> {
+public interface CommandRepository<E extends Command, T extends Map<String, E>> {
 
     /**
      * Creates a basic implementation of the command repository
@@ -20,12 +20,12 @@ public interface CommandRepository<E, T extends Collection<E>> {
      * @param <T> type of collection
      * @return the basic command repository
      */
-    static <T extends Collection<Command>> CommandRepository<Command, List<Command>> basic() {
+    static <T extends Collection<Command>> CommandRepository<Command, Map<String, Command>> basic() {
         return new CommandRepositoryImpl();
     }
 
     /**
-     * The collection that stores all of the commands
+     * The collection that stores all the commands
      *
      * @return the collection
      */
@@ -37,7 +37,9 @@ public interface CommandRepository<E, T extends Collection<E>> {
      * @param object object to add
      */
     default void add(E object) {
-        getCollection().add(object);
+        for (String label : object.getLabels()) {
+            getCollection().put(label, object);
+        }
     }
 
 }
