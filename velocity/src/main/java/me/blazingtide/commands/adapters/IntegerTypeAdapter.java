@@ -1,10 +1,11 @@
 package me.blazingtide.commands.adapters;
 
 import com.google.common.collect.Lists;
+import com.velocitypowered.api.command.CommandSource;
 import me.blazingtide.commands.adapter.TypeAdapter;
 import me.blazingtide.commands.sender.Sender;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +18,9 @@ public class IntegerTypeAdapter implements TypeAdapter<Integer> {
 
     @Override
     public void onException(Sender sender, String given, Exception exception) {
-        CommandSender commandSender = (CommandSender) sender.getSenderObject();
+        CommandSource commandSender = (CommandSource) sender.getSenderObject();
 
-        commandSender.sendMessage(ChatColor.RED + given + " is not a valid number.");
+        commandSender.sendMessage(Component.text(given + " is not a valid number.").color(NamedTextColor.RED));
     }
 
     @Override

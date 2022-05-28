@@ -14,5 +14,4 @@ public class StringTypeAdapter implements TypeAdapter<String> {
     public void onException(Sender sender, String given, Exception exception) {
 
     }
-
 }
