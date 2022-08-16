@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class AnnotationProcessor {
 
-    public static List<Command> createCommands(Object object) {
+    public static List<Command> createCommands(Object object, String[] parents) {
         final List<Command> commands = new ArrayList<>();
 
         for (Method method : object.getClass().getMethods()) {
@@ -37,6 +37,13 @@ public class AnnotationProcessor {
             final List<Class<?>> params = Arrays.stream(parameters).map(Parameter::getType).collect(Collectors.toList());
 
             for (String label : annotation.labels()) {
+                if (parents != null) {
+                    for (String parent : parents) {
+                        commands.add(processForLabel((parent + " " + label.toLowerCase()).trim(), params, parameters, method, object, annotation));
+                    }
+                    continue;
+                }
+
                 commands.add(processForLabel(label.toLowerCase(), params, parameters, method, object, annotation));
             }
         }
@@ -140,6 +147,18 @@ public class AnnotationProcessor {
                 } else {
                     mappedParameters[i] = cursor.as(clazz);
                 }
+            }
+
+            //If the last parameter type is a string then collect all the other strings in the rest of the argument
+            //and use that as a parameter rather than just that 1 word
+            if (parameters[parameters.length - 1].getType() == String.class && commandArguments.getArguments().length > parameters.length - 1) {
+                final StringBuilder builder = new StringBuilder();
+
+                for (int i = parameters.length - 2; i < commandArguments.getArguments().length; i++) {
+                    builder.append(commandArguments.getArguments()[i].getLabel()).append(" ");
+                }
+
+                mappedParameters[parameters.length - 1] = builder.toString().trim();
             }
 
             try {

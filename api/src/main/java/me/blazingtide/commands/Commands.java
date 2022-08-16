@@ -16,15 +16,24 @@ public class Commands {
     private static CommandService commandService;
 
     public static List<Command> registerAnnotations(Object object) {
-        return AnnotationProcessor.createCommands(object);
+        return AnnotationProcessor.createCommands(object, null);
     }
 
+    public static List<Command> registerAnnotations(Object object, String... parents) {
+        return AnnotationProcessor.createCommands(object, parents);
+    }
+
+    @Deprecated
     public static CommandBuilder begin() {
         return new CommandBuilderImpl();
     }
 
     public static CommandServiceBuilder newInstance() {
         return new CommandServiceBuilderImpl();
+    }
+
+    public static void unregisterCommands(String... labels) {
+        commandService.getAgent().unregisterCommands(labels);
     }
 
     public static CommandService getCommandService() {

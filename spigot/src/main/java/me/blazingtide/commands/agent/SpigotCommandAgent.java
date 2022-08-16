@@ -10,6 +10,7 @@ import me.blazingtide.commands.exception.argument.CommandArgumentTypeNotFoundExc
 import me.blazingtide.commands.exception.sender.CommandSenderException;
 import me.blazingtide.commands.sender.Sender;
 import net.md_5.bungee.api.ChatColor;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
@@ -71,14 +72,28 @@ public class SpigotCommandAgent implements CommandInjectionAgent {
     }
 
     @Override
+    public void unregisterCommands(String... labels) {
+        if (commandMap == null) {
+            commandMap = getCommandMap();
+        }
+
+        for (String label : labels) {
+            commandMap.getCommand(label).unregister(commandMap);
+        }
+    }
+
+    @Override
     public void sendHelp(Command command, Object senderObject, String label) {
         final CommandSender sender = (CommandSender) senderObject;
 
-        final ChatColor PRIMARY_COLOR = ChatColor.of("#59afff");
-        final ChatColor SECONDARY_COLOR = ChatColor.of("#bddfff");
+        final ChatColor PRIMARY_COLOR = ChatColor.of("#099e0c");
+        final ChatColor SECONDARY_COLOR = ChatColor.of("#4ac24c");
 
+        sender.sendMessage(PRIMARY_COLOR.toString() + ChatColor.BOLD + ChatColor.STRIKETHROUGH + "-----------------------------");
+        sender.sendMessage(PRIMARY_COLOR + WordUtils.capitalize(label) + " Help");
+        sender.sendMessage(ChatColor.WHITE + "All the subcommands of the command " + label + " are listed below.");
         sender.sendMessage(" ");
-        sender.sendMessage(PRIMARY_COLOR.toString() + ChatColor.BOLD + label + " Help:");
+        sender.sendMessage(ChatColor.GRAY + " - " + SECONDARY_COLOR + "/" + label.toLowerCase(Locale.ROOT) + ChatColor.GRAY + ": Displays all subcommands");
         for (Command subCommand : command.getSubCommands()) {
             final String arg = String.join(",", subCommand.getLabels());
 
@@ -89,12 +104,12 @@ public class SpigotCommandAgent implements CommandInjectionAgent {
             }
 
             sender.sendMessage(ChatColor.GRAY + " - " + SECONDARY_COLOR + "/" + label.toLowerCase(Locale.ROOT) + " " + arg + usage
-                    + " " + ChatColor.GRAY + " - " + ChatColor.WHITE + subCommand.getDescription());
+                    + ChatColor.GRAY + ": " + subCommand.getDescription());
         }
         if (command.getSubCommands().isEmpty()) {
-            sender.sendMessage(" " + SECONDARY_COLOR + "No sub commands registered");
+            sender.sendMessage(ChatColor.WHITE + "Failed to find any subcommands");
         }
-        sender.sendMessage(" ");
+        sender.sendMessage(PRIMARY_COLOR.toString() + ChatColor.BOLD + ChatColor.STRIKETHROUGH + "-----------------------------");
     }
 
     @Override
